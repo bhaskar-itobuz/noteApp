@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import { string } from "zod";
 
 const userSchema = new mongoose.Schema({
     email: {
@@ -17,6 +18,10 @@ const userSchema = new mongoose.Schema({
     verify: {
         type: Boolean,
         default : false
+    },
+    fileName: {
+        type : String,
+        default : "",
     },
 })
 
