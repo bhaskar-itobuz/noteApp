@@ -16,7 +16,6 @@ function getBearerToken(req) {
 export const createData = async (req, res) => {
   try {
     const token = getBearerToken(req);
-    // console.log(token);
     jwt.verify(token, "ourSecretKey", async function (err, decoded) {
       if (err) {
         console.log(err);
@@ -25,12 +24,10 @@ export const createData = async (req, res) => {
         const id = decoded.userId;
         const { title, content } = req.body;
         const ans = await userSchema.findOne({ _id: id });
-        const sameTitle = await noteSchema.findOne({ title: title });
-        // const notesbyId = await noteSchema.find({userId : id});
+        const sameTitle = await noteSchema.find({ title: title, userId: id });
         const loginCheck = await sessionSchema.findOne({ userId: id });
         const userId = loginCheck.userId;
-        if (ans && !sameTitle && loginCheck) {
-          // console.log("hi");
+        if (ans && sameTitle.length === 0 && loginCheck) {
           const add = await noteSchema.create({
             userId,
             title,
@@ -151,12 +148,13 @@ export const findAll = async (req, res) => {
         const ans = await userSchema.findOne({ _id: id });
         const loginCheck = await sessionSchema.findOne({ userId: id });
         const userId = loginCheck.userId;
-        console.log(userId)
+        console.log(userId);
         const users = await noteSchema.find({ userId: userId });
         if (ans && loginCheck && users) {
           res.json({
             status: 200,
-            message: "find successfully", users,
+            message: "find successfully",
+            users,
           });
         } else {
           res.json({
@@ -191,7 +189,8 @@ export const findbyId = async (req, res) => {
         if (ans && loginCheck && users) {
           res.json({
             status: 200,
-            message: "find successfully", users,
+            message: "find successfully",
+            users,
           });
         } else {
           res.json({
@@ -212,38 +211,48 @@ export const findbyId = async (req, res) => {
 // To sort by 'email' in descending order: GET /users?sortBy=email&sortOrder=desc
 export const sortbyQuery = async (req, res) => {
   try {
-        const token = getBearerToken(req);
-        jwt.verify(token, "ourSecretKey", async function (err, decoded) {
-          if (err) {
-            console.log(err);
-            res.send("possibly the link is invalid or expired");
-          } else {
-            const id = decoded.userId;
-            const ans = await userSchema.findOne({ _id: id });
-            const loginCheck = await sessionSchema.findOne({ userId: id });
-            if (ans && loginCheck) {
-              const sortBy = req.query.sortBy || 'timestamps'; // Default to 'createdAt' if not provided
-              const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1; // Set sort order based on query param
-              const sortCriteria = { [sortBy]: sortOrder }; // Dynamically create sort object
-              const users = await noteSchema.find().sort(sortCriteria).limit(3); // Apply sort to query
-              res.json({
-                status: 200,
-                message: "find successfully",users,
-              });
-              
-            } else {
-              res.json({
-                status: 404,
-                message: "not find data",
-              });
-            }
+    const token = getBearerToken(req);
+    jwt.verify(token, "ourSecretKey", async function (err, decoded) {
+      if (err) {
+        console.log(err);
+        res.send("possibly the link is invalid or expired");
+      } else {
+        const id = decoded.userId;
+        const ans = await userSchema.findOne({ _id: id });
+        const loginCheck = await sessionSchema.findOne({ userId: id });
+        if (ans && loginCheck) {
+          const sortBy = req.query.sortBy || "timestamps"; // Default to 'createdAt' if not provided
+          const sortOrder = req.query.sortOrder === "desc" ? -1 : 1; // Set sort order based on query param
+          const pageNo = req.query.pageNo || 1;
+          const searchbyTitle = req.query.searchbyTitle || "";
+          const sortCriteria = { [sortBy]: sortOrder }; // Dynamically create sort object
+          const users = await noteSchema.find({userId : id ,  "title" : { $regex: '^' + searchbyTitle }}).sort(sortCriteria).skip((pageNo-1)*3).limit(3); // Apply sort to query
+          if(users.length > 0){
+            res.json({
+              status: 200,
+              message: "find successfully",
+              users,
+            });
           }
-        });
-      } catch (err) {
-        res.json({
-          status: 404,
-          message: " Data Not Found",
-        });
-    }
-}
-
+          else{
+            res.json({
+              status: 404,
+              message: "not find matching data",
+              users,
+            });
+          }
+        } else {
+          res.json({
+            status: 404,
+            message: "not find data",
+          });
+        }
+      }
+    });
+  } catch (err) {
+    res.json({
+      status: 404,
+      message: " Data Not Found",
+    });
+  }
+};
