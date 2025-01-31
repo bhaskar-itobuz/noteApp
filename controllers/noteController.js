@@ -5,7 +5,6 @@ import jwt from "jsonwebtoken";
 
 function getBearerToken(req) {
   const authorizationHeader = req.headers["authorization"];
-
   if (authorizationHeader && authorizationHeader.startsWith("Bearer ")) {
     return authorizationHeader.split(" ")[1];
   } else {
