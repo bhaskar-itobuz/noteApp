@@ -1,10 +1,11 @@
 import userSchema from "../model/userSchema.js";
 import sessionSchema from "../model/sessionSchema.js";
-import noteSchema from "../model/noteSchema.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
+import hbs from 'nodemailer-express-handlebars';
+
 dotenv.config();
 
 function getBearerToken(req) {
@@ -50,20 +51,30 @@ export const createData = async (req, res) => {
             pass: process.env.passKey,
           },
         });
+
+        transporter.use('compile', hbs({
+            viewEngine: {
+                extname: '.hbs',
+                layoutsDir: 'views/',
+                defaultLayout: false,
+                partialsDir: 'views/',
+            },
+            viewPath: 'views/',
+            extName: '.hbs'
+        }));
+
         const mailConfigurations = {
           from: "bhaskar@itobuz.com",
           to: "bhaskar@itobuz.com",
           subject: "Email Verification",
-          text: `Hi! There, You have recently visited 
-                           our website and entered your email.
-                           Please follow the given link to verify your email
-                           http://localhost:3000/note/verify/${token} 
-                           Thanks`,
+          template: 'email_template',
+            context: {
+                token: token,
+            }
         };
         transporter.sendMail(mailConfigurations, function (error, info) {
           if (error) throw Error(error);
           console.log("Email Sent Successfully");
-          console.log(info);
         });
 
         res.json({
@@ -83,7 +94,6 @@ export const createData = async (req, res) => {
 export const verifyData = async (req, res) => {
   try {
     const { token } = req.params;
-    console.log("token", token);
     jwt.verify(token, "ourSecretKey", async function (err, decoded) {
       if (err) {
         console.log(err);
@@ -92,9 +102,7 @@ export const verifyData = async (req, res) => {
         );
       } else {
         res.send("Email verify successfully");
-        console.log(decoded.userId);
         const ans = await userSchema.findOne({ _id: decoded.userId });
-        console.log("id", ans);
         if (ans) {
           ans.verify = true;
           ans.save();

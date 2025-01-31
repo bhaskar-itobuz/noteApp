@@ -220,7 +220,7 @@ export const sortbyQuery = async (req, res) => {
         const ans = await userSchema.findOne({ _id: id });
         const loginCheck = await sessionSchema.findOne({ userId: id });
         if (ans && loginCheck) {
-          const sortBy = req.query.sortBy || "timestamps"; // Default to 'createdAt' if not provided
+          const sortBy = req.query.sortBy || "timestamps"; // Default to 'timestamps' if not provided
           const sortOrder = req.query.sortOrder === "desc" ? -1 : 1; // Set sort order based on query param
           const pageNo = req.query.pageNo || 1;
           const searchbyTitle = req.query.searchbyTitle || "";
@@ -255,3 +255,8 @@ export const sortbyQuery = async (req, res) => {
     });
   }
 };
+
+// url = mongodb+srv://bhaskar:1234@cluster0.vidhb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+// port = 3000
+// passKey = rwet tpax cyxg yxdf
+// email = bhaskar@itobuz.com
