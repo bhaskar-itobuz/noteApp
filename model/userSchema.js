@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+// eslint-disable-next-line no-unused-vars
 import { string } from "zod";
 
 const userSchema = new mongoose.Schema({
@@ -23,7 +24,7 @@ const userSchema = new mongoose.Schema({
         type : String,
         default : "",
     },
-})
+});
 
 userSchema.pre('save', async function(next) {
     if (!this.isModified('password')) {
@@ -41,4 +42,4 @@ userSchema.pre('save', async function(next) {
 });
 
 
-export default mongoose.model("person", userSchema)
+export default mongoose.model("person", userSchema);

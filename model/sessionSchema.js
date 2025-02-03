@@ -9,6 +9,6 @@ const sessionSchema = new mongoose.Schema({
         default:Date.now
     },
 
-})
+});
 
 export default mongoose.model("Log in user", sessionSchema);

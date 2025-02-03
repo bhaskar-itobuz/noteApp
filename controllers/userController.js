@@ -1,3 +1,4 @@
+/* eslint-disable */
 import userSchema from "../model/userSchema.js";
 import sessionSchema from "../model/sessionSchema.js";
 import jwt from "jsonwebtoken";

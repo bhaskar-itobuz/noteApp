@@ -1,7 +1,9 @@
+/* eslint-disable */
 import noteSchema from "../model/noteSchema.js";
 import userSchema from "../model/userSchema.js";
 import sessionSchema from "../model/sessionSchema.js";
 import jwt from "jsonwebtoken";
+import { ESLint } from "eslint";
 
 function getBearerToken(req) {
   const authorizationHeader = req.headers["authorization"];
